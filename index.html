@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RGPV MST Marks Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .glass {
+      backdrop-filter: blur(10px);
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-tr from-indigo-400 via-purple-400 to-pink-400 flex items-center justify-center p-4">
+  <div class="max-w-4xl w-full bg-white bg-opacity-30 rounded-2xl shadow-xl p-6 space-y-8 glass">
+    <h1 class="text-3xl font-bold text-center text-white">🎓 RGPV MST Marks Calculator</h1>
+
+    <div id="inputs" class="space-y-4">
+      <!-- Repeatable Input Card -->
+      <script>
+        for (let i = 1; i <= 5; i++) {
+          document.write(`
+            <div class="bg-white bg-opacity-20 p-4 rounded-xl shadow-md transition hover:scale-105 glass">
+              <h2 class="text-lg font-semibold text-white mb-2">Subject ${i}</h2>
+              <input type="text" placeholder="Enter Subject ${i} Name" class="subject${i}-name w-full p-2 mb-2 rounded-lg outline-none" />
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="number" min="0" max="20" placeholder="MST 1 Marks (out of 20)" class="subject${i}-mst1 w-full p-2 rounded-lg outline-none" />
+                <input type="number" min="0" max="30" placeholder="MST 2 Marks (out of 30)" class="subject${i}-mst2 w-full p-2 rounded-lg outline-none" />
+              </div>
+            </div>
+          `);
+        }
+      </script>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-4 justify-center">
+      <button onclick="calculateBestOf()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-xl transition duration-300">Calculate Best of MST</button>
+      <button onclick="calculateAverageBased()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-xl transition duration-300">Calculate Average-Based Result</button>
+    </div>
+
+    <div id="result" class="bg-white bg-opacity-20 p-4 rounded-xl shadow-inner text-white transition-all duration-500">
+      <h3 class="text-2xl font-semibold mb-4">📊 Result:</h3>
+      <div id="result-details" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <script>
+    function convertMST2(marks) {
+      return (marks / 30) * 20;
+    }
+
+    function getMarks() {
+      const subjects = [];
+      for (let i = 1; i <= 5; i++) {
+        const name = document.querySelector(`.subject${i}-name`).value || `Subject ${i}`;
+        const mst1 = parseFloat(document.querySelector(`.subject${i}-mst1`).value);
+        const mst2 = parseFloat(document.querySelector(`.subject${i}-mst2`).value);
+        subjects.push({ name, mst1: isNaN(mst1) ? null : mst1, mst2: isNaN(mst2) ? null : convertMST2(mst2) });
+      }
+      return subjects;
+    }
+
+    function calculateBestOf() {
+      const subjects = getMarks();
+      let total = 0;
+      let html = '';
+
+      subjects.forEach((subj, index) => {
+        let best;
+        if (subj.mst1 !== null && subj.mst2 !== null) {
+          best = Math.max(subj.mst1, subj.mst2);
+        } else {
+          best = subj.mst1 !== null ? subj.mst1 : subj.mst2 || 0;
+        }
+        total += best;
+        html += `<p>📘 ${subj.name}: ${best.toFixed(2)} (Chosen from MST ${best === subj.mst1 ? '1' : '2'})</p>`;
+      });
+      html += `<hr class="my-2"><p class="font-bold text-lg">Total: ${total.toFixed(2)} / 100</p>`;
+      document.getElementById('result-details').innerHTML = html;
+    }
+
+    function calculateAverageBased() {
+      const subjects = getMarks();
+      let total = 0;
+      let html = '';
+
+      subjects.forEach((subj, index) => {
+        let average;
+        if (subj.mst1 !== null && subj.mst2 !== null) {
+          average = (subj.mst1 + subj.mst2) / 2;
+        } else {
+          average = subj.mst1 !== null ? subj.mst1 : subj.mst2 || 0;
+        }
+        total += average;
+        html += `<p>📙 ${subj.name}: ${average.toFixed(2)} (Average used)</p>`;
+      });
+      html += `<hr class="my-2"><p class="font-bold text-lg">Total: ${total.toFixed(2)} / 100</p>`;
+      document.getElementById('result-details').innerHTML = html;
+    }
+  </script>
+</body>
+
+</html>
